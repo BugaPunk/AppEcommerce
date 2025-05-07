@@ -131,7 +131,7 @@ class LoginScreen : Screen {
                         isLoading = false
                         
                         if (result.isSuccess) {
-                            navigator.push(HomeScreen())
+                            navigator.push(WelcomeScreen())  // Cambiado de HomeScreen a WelcomeScreen
                         } else {
                             errorMessage = result.exceptionOrNull()?.message ?: "Error al iniciar sesión"
                         }

@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
@@ -17,6 +18,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bugabuga.appecommerce.repository.CartRepository
 import com.bugabuga.appecommerce.repository.ProductRepository
 import com.bugabuga.appecommerce.repository.UserRepository
+import com.bugabuga.appecommerce.ui.components.LargeAppBar
 import com.seiko.imageloader.rememberImagePainter
 import kotlinx.coroutines.launch
 
@@ -37,6 +39,9 @@ class ProductDetailScreen(private val productId: Int) : Screen {
         var isLoading by remember { mutableStateOf(true) }
         var errorMessage by remember { mutableStateOf<String?>(null) }
         
+        // Configuración para el scroll behavior
+        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+        
         LaunchedEffect(productId) {
             isLoading = true
             errorMessage = null
@@ -51,25 +56,21 @@ class ProductDetailScreen(private val productId: Int) : Screen {
         }
         
         Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
-                TopAppBar(
-                    title = { Text(selectedProduct?.nombre ?: "Detalle del Producto") },
-                    navigationIcon = {
-                        IconButton(onClick = { navigator.pop() }) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Back"
-                            )
+                LargeAppBar(
+                    title = selectedProduct?.nombre ?: "Detalle del Producto",
+                    showBackButton = true,
+                    onBackClick = { navigator.pop() },
+                    onCartClick = { navigator.push(CartScreen()) },
+                    onProfileClick = { 
+                        if (currentUser != null) {
+                            navigator.push(ProfileScreen())
+                        } else {
+                            navigator.push(LoginScreen())
                         }
                     },
-                    actions = {
-                        IconButton(onClick = { navigator.push(CartScreen()) }) {
-                            Icon(
-                                imageVector = Icons.Default.ShoppingCart,
-                                contentDescription = "Cart"
-                            )
-                        }
-                    }
+                    scrollBehavior = scrollBehavior
                 )
             }
         ) { paddingValues ->

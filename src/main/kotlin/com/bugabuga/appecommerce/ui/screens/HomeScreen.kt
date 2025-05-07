@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -18,6 +19,7 @@ import com.bugabuga.appecommerce.model.Product
 import com.bugabuga.appecommerce.repository.CartRepository
 import com.bugabuga.appecommerce.repository.ProductRepository
 import com.bugabuga.appecommerce.repository.UserRepository
+import com.bugabuga.appecommerce.ui.components.LargeAppBar
 import com.bugabuga.appecommerce.ui.components.ProductCard
 import com.bugabuga.appecommerce.ui.components.SearchBar
 import kotlinx.coroutines.launch
@@ -38,6 +40,9 @@ class HomeScreen : Screen {
         var searchQuery by remember { mutableStateOf("") }
         var isLoading by remember { mutableStateOf(false) }
         var errorMessage by remember { mutableStateOf<String?>(null) }
+        
+        // Configuración para el scroll behavior del TopAppBar
+        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
         
         LaunchedEffect(Unit) {
             isLoading = true
@@ -67,30 +72,19 @@ class HomeScreen : Screen {
         }
         
         Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
-                TopAppBar(
-                    title = { Text("E-Commerce App") },
-                    actions = {
-                        IconButton(onClick = { navigator.push(CartScreen()) }) {
-                            Icon(
-                                imageVector = Icons.Default.ShoppingCart,
-                                contentDescription = "Cart"
-                            )
+                LargeAppBar(
+                    title = "E-Commerce App",
+                    onCartClick = { navigator.push(CartScreen()) },
+                    onProfileClick = { 
+                        if (currentUser != null) {
+                            navigator.push(ProfileScreen())
+                        } else {
+                            navigator.push(LoginScreen())
                         }
-                        
-                        IconButton(onClick = { 
-                            if (currentUser != null) {
-                                navigator.push(ProfileScreen())
-                            } else {
-                                navigator.push(LoginScreen())
-                            }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Profile"
-                            )
-                        }
-                    }
+                    },
+                    scrollBehavior = scrollBehavior
                 )
             }
         ) { paddingValues ->
